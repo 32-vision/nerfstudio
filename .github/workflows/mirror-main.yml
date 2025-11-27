@@ -1,0 +1,42 @@
+name: Mirror upstream main (rebase)
+
+on:
+  schedule:
+    # Runs once per week: Sunday 00:00 JST (Saturday 15:00 UTC)
+    - cron: "0 15 * * 0"
+  workflow_dispatch:
+
+jobs:
+  mirror-main:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout mirror repository (main only, full history)
+        uses: actions/checkout@v4
+        with:
+          ref: main        # Explicitly checkout main branch
+          fetch-depth: 0   # Full history required for safe rebase
+
+      - name: Configure git user
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Add upstream remote and fetch main branch
+        run: |
+          # Add the upstream repository (original project)
+          git remote add upstream https://github.com/nerfstudio-project/nerfstudio.git
+
+          # Fetch only the upstream main branch (no tags needed)
+          git fetch --no-tags upstream main
+
+      - name: Rebase mirror main onto upstream main
+        run: |
+          git checkout main
+          # Reapply local commits on top of the latest upstream/main
+          git rebase upstream/main
+
+      - name: Push updated main (force-with-lease)
+        run: |
+          # Rebase rewrites history, so force push with safety checks
+          git push origin main --force-with-lease
