@@ -35,7 +35,7 @@ docker build \
 Check that COLMAP 3.8 is correctly installed:
 
 ```bash
-docker run --rm --gpus all nerfstudio-75 colmap -v
+docker run --rm --gpus all nerfstudio-75 colmap help
 ```
 
 You should see output indicating COLMAP 3.8.
